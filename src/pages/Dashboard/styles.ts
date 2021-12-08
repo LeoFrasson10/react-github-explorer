@@ -63,7 +63,7 @@ export const Error = styled.span`
 `;
 
 export const Repositories = styled.div`
-  margin-top: 80px;
+  margin-top: 40px;
   max-width: 700px;
 
   a {
@@ -93,6 +93,11 @@ export const Repositories = styled.div`
     div{
       margin: 0 16px;
       flex: 1;
+      position: relative;
+      text-overflow: ellipsis;
+      overflow: hidden;
+      white-space: nowrap;
+      max-height: 3.6rem;
 
       strong {
         font-size: 20px;
@@ -103,6 +108,9 @@ export const Repositories = styled.div`
         font-size: 18px;
         color: #a8a8b3;
         margin-top: 4px;
+        position: relative;
+        text-overflow: ellipsis;
+        overflow: hidden;
       }
     }
 
@@ -114,3 +122,19 @@ export const Repositories = styled.div`
   }
 `;
 
+export const PaginationContainer = styled.div`
+  margin-top: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  max-width: 700px;
+`
+
+export const PaginationButton = styled.button`
+  display: flex;
+  align-items: center;
+  padding: 8px 10px;
+  justify-content: space-between;
+
+
+`

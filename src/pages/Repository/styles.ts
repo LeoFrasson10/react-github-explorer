@@ -46,6 +46,14 @@ export const RepositoryInfo = styled.section`
         font-size: 18px;
         color: #737380;
         margin-top: 4px;
+        display: block;/* or inline-block */
+        text-overflow: ellipsis;
+
+        word-wrap: break-word;
+        overflow: hidden;
+        max-height: 3.6em;
+        line-height: 1.8em;
+
       }
     }
 

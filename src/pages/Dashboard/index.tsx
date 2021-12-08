@@ -1,12 +1,13 @@
-import React, { useState, useEffect, FormEvent } from 'react';
-import { FiChevronRight } from 'react-icons/fi';
+import React, { useState, useEffect, FormEvent, useCallback } from 'react';
+import { FiChevronRight, FiChevronLeft } from 'react-icons/fi';
 import { Link } from 'react-router-dom';
 import api from '../../services/api';
 
 import logoImg from '../../assets/logo.svg';
 
 import {
-  Title, Form, Repositories, Error
+  Title, Form, Repositories, Error,PaginationContainer,
+  PaginationButton
 } from './styles';
 
 //puxar só os que forem utilizar, não é para puxar todos
@@ -25,6 +26,8 @@ interface Repository {
 const Dashboard: React.FC = () => {
   const [newRepo, setNewRepo] = useState('');
   const [inputError, setInputError] = useState('');
+  const [page, setPage] = useState(1);
+  const [isSearch, setIsSearch] = useState(false);
 
   const [repositories, setRepositories] = useState<Repository[]>(() => {
     const storageRepositories = localStorage.getItem('@GithubExplorer:repositories');
@@ -40,7 +43,7 @@ const Dashboard: React.FC = () => {
     localStorage.setItem('@GithubExplorer:repositories', JSON.stringify(repositories));
   }, [repositories]);
 
-  async function handleAddRepository(event: FormEvent<HTMLFormElement>): Promise<void> {
+  const handleAddRepository = useCallback(async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
     if (!newRepo) {
@@ -49,22 +52,45 @@ const Dashboard: React.FC = () => {
     }
 
     try {
-      const response = await api.get<Repository>(`repos/${newRepo}`);
+      const response = await api.get(`/search/repositories?q=${newRepo}&sort=stars&per_page=40&page=${page}`);
+      const { items, total_count } = response.data;
 
-      const repository = response.data;
+      const repository = items
 
-      setRepositories([...repositories, repository]);
-      setNewRepo('');
+      setRepositories([ ...repository]);
+      // setNewRepo('');
+      if(total_count > 40){
+        setIsSearch(true);
+      }
       setInputError('');
 
     } catch (err) {
       setInputError('Erro na busca por esse repositório');
+      setIsSearch(false);
     }
 
     //adição de um novo repositorio
     //consumir a api do github
     //salvar novo repositorio no estado
-  }
+  }, [newRepo, page]);
+
+  const loadMore = useCallback(async () => {
+    try {
+      const response = await api.get(`/search/repositories?q=${newRepo}&sort=stars&per_page=40&page=${page}`);
+      const { items } = response.data;
+
+      const repository = items
+
+      setRepositories([...repository]);
+      // setNewRepo('');
+      setInputError('');
+
+    } catch (err) {
+      setInputError('Erro na busca por esse repositório');
+    }
+  }, [page, newRepo]);
+
+
 
   return (
       <>
@@ -82,7 +108,32 @@ const Dashboard: React.FC = () => {
           </Form>
 
           { inputError && <Error>{inputError}</Error> }
+          {/* fazer paginação */}
 
+          {isSearch && (
+            <PaginationContainer>
+              <PaginationButton
+                onClick={() => {
+                  setPage(page - 1)
+                  loadMore()
+                }}
+                disabled={page === 1}
+              >
+                <FiChevronLeft size={20} />
+                Anterior
+              </PaginationButton>
+              <PaginationButton
+                disabled={page === 25}
+                onClick={() => {
+                  setPage(page + 1)
+                  loadMore()
+                }}
+              >
+                Próximo
+                <FiChevronRight size={20} />
+              </PaginationButton>
+            </PaginationContainer>
+          )}
           <Repositories>
             {repositories.map((repository) => (
               <Link to={`/repository/${repository.full_name}`} key={repository.full_name}>
